@@ -1,0 +1,177 @@
+(define (domain grid)
+
+
+
+  (:agents a)
+  (:requirements :strips :typing )
+
+  (:types color room place id)
+
+  (:predicates 
+        (at ?ag - agent ?place - place)
+                (block ?colorid - color ?id - id ?placeid - room)
+
+        
+            (connected ?r1 - place ?r2 - place)
+                        (connected ?r1 - place ?r2 - room)
+                                    (connected ?r1 - room ?r2 - place)
+
+                    (hiddenblock ?colorid - color ?id - id ?placeid - room)  
+                    (blockin ?colorid - color ?id - id ?dropzone - room)
+
+                {AK}(checked ?placeid - room)
+
+                (in ?ag - agent ?roomid - room)
+
+            (holding ?ag - agent ?colorid - color ?id - id ?placeid - room)
+        (atblock ?colorid - color ?id - id ?placeid - room)
+        {AK}(atblockbot)
+                    (obs ?colorid - color ?id - id ?placeid - room)
+            (droplocation ?loc - room)
+                (handempty)
+                (plan_executed)
+                (pre_plan_executed)
+                (something_was_executed)
+    ) 
+    
+
+
+ (:action goto
+             :derive-condition   always
+       :parameters (?ag - agent ?placeid - place ?currplace - room)
+       :precondition (and (in ?ag ?currplace) (handempty) (connected ?currplace ?placeid) ) 
+       :effect
+       (and (not(in ?ag ?currplace)) (at ?ag ?placeid) 
+        )
+  )
+
+  (:action goto
+             :derive-condition   always
+       :parameters (?ag - agent ?placeid - room ?currplace - place)
+       :precondition (and (at ?ag ?currplace) (handempty) (connected ?currplace ?placeid) )
+       :effect
+       (and (not(at ?ag ?currplace)) (in ?ag ?placeid) 
+        )
+  )
+
+  (:action goto
+             :derive-condition   always
+       :parameters (?ag - agent ?placeid - place ?currplace - place)
+       :precondition (and (at ?ag ?currplace) (handempty) (connected ?currplace ?placeid) )
+       :effect
+       (and (not(at ?ag ?currplace)) (at ?ag ?placeid) 
+        )
+  )
+  
+;;;
+
+           
+  (:action gotodrop
+             :derive-condition   always
+         :parameters (?ag - agent ?placeid - place ?currplace - room)
+         :precondition (and (in ?ag ?currplace) (not (handempty)) (connected ?currplace ?placeid) )
+         :effect
+         (and (not(in ?ag ?currplace)) (at ?ag ?placeid) (something_was_executed)) 
+  )
+
+  (:action gotodrop
+             :derive-condition   always
+         :parameters (?ag - agent ?placeid - room ?currplace - place)
+         :precondition (and (at ?ag ?currplace) (not (handempty)) (connected ?currplace ?placeid) )
+         :effect
+         (and (not(at ?ag ?currplace)) (in ?ag ?placeid) ) 
+  )
+
+  (:action gotodrop
+             :derive-condition   always
+         :parameters (?ag - agent ?placeid - place ?currplace - place)
+         :precondition (and (at ?ag ?currplace) (not (handempty)) (connected ?currplace ?placeid) )
+         :effect
+         (and (not(at ?ag ?currplace)) (at ?ag ?placeid) ) 
+  )
+
+;;;
+
+
+
+
+
+
+     
+;  (:action gotoblock
+;             :derive-condition   always
+;         :parameters (?ag - agent ?colorid - color ?placeid - room ?id - id)
+;         :precondition (and (in ?ag ?placeid) (handempty) (not (atblockbot))                             )
+;         :effect 
+;              (and (atblock ?colorid ?id ?placeid) (atblockbot)))    
+;
+
+
+
+           
+ ; (:action pickup
+ ;            :derive-condition   always
+ ;        :parameters         (?ag - agent ?colorid - color ?id - id ?placeid - room)
+ ;        :precondition       (and (in b roomb3) 
+ ;                                                       (handempty)
+ ;                           (not (droplocation ?placeid))  
+ ;                )  
+ ;        :effect
+ ;                           (and 
+ ;                           (when [a][?ag](atblock ?colorid ?id roomb3) [a][?ag](holding ?ag ?colorid ?id roomb3) ;)
+ ;                    (not (handempty)) (not (atblockbot))
+ ;                    )
+ ;                    ) 
+
+(:action pickup
+             :derive-condition   always
+         :parameters         (?ag - agent ?colorid - color ?id - id ?placeid - room)
+         :precondition       (and (in ?ag ?placeid) 
+                                                        (handempty) (atblock ?colorid ?id ?placeid)
+                            (not (droplocation ?placeid))  
+                 )  
+         :effect
+                            (and 
+                            (holding ?ag ?colorid ?id ?placeid) 
+                     (not (handempty)) (not (atblockbot))
+                     )
+                     )
+
+
+
+  (:action putdown
+             :derive-condition   always
+         :parameters        (?ag - agent ?colorid - color ?id - id ?placeid - room ?dropzone - room)
+         :precondition      (and (holding ?ag ?colorid ?id ?placeid) (in ?ag ?dropzone))
+                                                                    
+                                                                 
+         :effect
+               (and (not (holding ?ag ?colorid ?id ?placeid))
+
+                (blockin ?colorid ?id ?dropzone)
+                        
+            (handempty)
+           ))
+
+
+ (:action informAboutBlockLocation
+      :derive-condition   always
+      :parameters         (?a1 - agent ?placeid - room)
+      :precondition       (and (atblock blue 1 ?placeid) )
+      :effect             (and 
+                               [?a1](atblock blue 1 ?placeid))
+                                   
+    ) 
+
+    (:action informAboutBlockNOTLocation
+      :derive-condition   always
+      :parameters         (?a1 - agent ?placeid - room)
+      :precondition       (and (not (atblock blue 1 ?placeid) ))
+      :effect             (and 
+                               [?a1](!atblock blue 1 ?placeid))
+                                   
+    ) 
+
+
+    
+)

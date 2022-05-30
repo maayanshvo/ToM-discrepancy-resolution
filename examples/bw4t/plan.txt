@@ -1,0 +1,4 @@
+goto_a_frontroomc1_lefthallc
+goto_a_frontroomc2_frontroomc1
+goto_a_roomc2_frontroomc2
+pickup_a_blue_1_roomc2

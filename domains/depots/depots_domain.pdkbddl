@@ -1,0 +1,116 @@
+(define (domain depots)
+
+  (:agents a)
+  (:requirements :strips :typing )
+
+  (:types thing truck place)
+
+(:predicates
+	 (at ?x - place ?y - place) (on ?x - thing ?y - thing) (in ?x - thing ?y - truck) (lifting ?x - thing ?y - thing) (available ?x - thing) (clear ?x - thing) (place ?x - place) (depot ?x - place) (distributor ?x - place) (truck ?x - truck) (hoist ?x - thing) (surface ?x - thing) (pallet ?x - thing) (crate ?x - thing) (atRobot ?loc - place) )
+
+
+
+
+  (:action ROBOT-PICK-UP-PACKAGE
+:derive-condition   always
+  :parameters
+   (?obj- thing
+    ?loc - place)
+  :precondition
+   (and (OBJ ?obj) (atRobot ?loc) (LOCATION ?loc)
+    (at ?obj ?loc))
+  :effect
+   (and (not (at ?obj ?loc)) (robotholdingcrate ?obj))
+
+   )
+
+   (:action ROBOT-DROP-OFF-PACKAGE
+:derive-condition   always
+  :parameters
+   (?obj- thing
+    ?loc - place)
+  :precondition
+   (and (OBJ ?obj) (atRobot ?loc) (LOCATION ?loc)
+    (robotholdingcrate ?obj))
+  :effect
+   (and (at ?obj ?loc) (not (robotholdingcrate ?obj)))
+
+   )
+
+
+   (:action ROBOT-MOVE
+:derive-condition   always
+  :parameters
+   (?loc-from - place
+    ?loc-to - place)
+  :precondition
+   (and (LOCATION ?loc-from) (LOCATION ?loc-to)
+  (atRobot ?loc-from) (path ?loc-from ?loc-to))
+  :effect
+   (and (not (atRobot ?loc-from)) (atRobot ?loc-to)))
+
+
+(:action informAboutFirstOrderBeliefObjLoc
+      :derive-condition   (always)
+      :parameters         (?a1 - agent ?obj- thing  ?loc - place)
+      :precondition       (and (at ?obj ?loc) 
+                                (OBJ ?obj) (LOCATION ?loc) )
+      :effect             (and 
+                               [?a1](at ?obj ?loc))
+                                   
+    )
+
+(:action informAboutHigherOrderBeliefObjLoc
+      :derive-condition   (always)
+      :parameters         (?a1 - agent ?a2 - agent ?a3 - agent 
+                           ?a4 - agent ?obj- thing  ?loc - place)
+      :precondition       (and [?a2][?a3][?a4](at ?obj ?loc) 
+                                (OBJ ?obj) (LOCATION ?loc) )
+      :effect             (and 
+                               [?a1][?a2][?a3][?a4](at ?obj ?loc))
+                                   
+    )
+
+
+
+(:action drive
+:derive-condition   always
+ :parameters ( ?x - truck ?y - place ?z - place)
+ :precondition
+	(and (truck ?x) (place ?y) (place ?z)  (at ?x ?y))
+ :effect
+	(and (at ?x ?z) (not (at ?x ?y))))
+
+(:action lift
+:derive-condition   always
+ :parameters ( ?x - thing ?y - thing ?z - thing ?p - place)
+ :precondition
+	(and (hoist ?x) (crate ?y) (surface ?z) (place ?p)  (at ?x ?p) (available ?x) (at ?y ?p) (on ?y ?z) (clear ?y))
+ :effect
+	(and (lifting ?x ?y) (clear ?z) (not (at ?y ?p)) (not (clear ?y)) (not (available ?x)) (not (on ?y ?z))))
+
+(:action drop
+:derive-condition   always
+ :parameters ( ?x - thing ?y - thing ?z - thing ?p - place)
+ :precondition
+	(and (hoist ?x) (crate ?y) (surface ?z) (place ?p)  (at ?x ?p) (at ?z ?p) (clear ?z) (lifting ?x ?y))
+ :effect
+	(and (available ?x) (at ?y ?p) (clear ?y) (on ?y ?z) (not (lifting ?x ?y)) (not (clear ?z))))
+
+(:action load
+:derive-condition   always
+ :parameters ( ?x - thing ?y - thing ?z - truck ?p - place)
+ :precondition
+	(and (hoist ?x) (crate ?y) (truck ?z) (place ?p)  (at ?x ?p) (at ?z ?p) (lifting ?x ?y))
+ :effect
+	(and (in ?y ?z) (available ?x) (not (lifting ?x ?y))))
+
+(:action unload
+:derive-condition   always
+ :parameters ( ?x - thing ?y - thing ?z - truck ?p - place)
+ :precondition
+	(and (hoist ?x) (crate ?y) (truck ?z) (place ?p)  (at ?x ?p) (at ?z ?p) (available ?x) (in ?y ?z))
+ :effect
+	(and (lifting ?x ?y) (not (in ?y ?z)) (not (available ?x))))
+
+)
